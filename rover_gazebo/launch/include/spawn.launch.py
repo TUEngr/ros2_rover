@@ -24,10 +24,17 @@
 import os
 from ament_index_python import get_package_share_directory
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import ExecuteProcess, RegisterEventHandler
+from launch.event_handlers import OnProcessExit
+
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch import LaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+
+from launch import LaunchIntrospector
+import xacro
+
 
 
 def generate_launch_description():
@@ -56,48 +63,46 @@ def generate_launch_description():
         default_value="0.0",
         description="Initial pose yaw")
 
+    xacro_file = os.path.join(get_package_share_directory(
+        "rover_description"), "robots/rover.urdf.xacro")
+
+    doc = xacro.parse(open(xacro_file))
+    xacro.process_doc(doc)
+
     ### NODES ###
     spawn_entity_cmd = Node(
-        package="gazebo_ros",
-        executable="spawn_entity.py",
-        arguments=["-entity", "rover",
-                   "-topic", "robot_description",
-                   "-timeout", "120",
-                   "-x", initial_pose_x,
-                   "-y", initial_pose_y,
-                   "-z", initial_pose_z,
-                   "-Y", initial_pose_yaw],
+        package="ros_gz_sim",
+        executable="create",
+        arguments=["-name", "rover",
+                   "-string", doc.toxml()],
         output="screen",
         parameters=[{"use_sim_time": True}]
     )
+#                   "-timeout", "120",
+#                   "-x", initial_pose_x,
+#                   "-y", initial_pose_y,
+#                   "-z", initial_pose_z,
+#                   "-Y", initial_pose_yaw],
 
-    joint_state_broadcaster_spawner = Node(
-        name="joint_state_broadcaster_spawner",
-        package="controller_manager",
-        executable="spawner",
-        arguments=["joint_state_broadcaster",
-                   "--controller-manager", "/controller_manager",
-                   "--controller-manager-timeout", "120"],
+
+    # joint_state_controller
+    joint_state_broadcaster_spawner = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'joint_state_broadcaster'],
+        output='screen'
     )
 
-    position_controller_spawner = Node(
-        name="position_controller_spawner",
-        package="controller_manager",
-        executable="spawner",
-        arguments=["position_controller",
-                   "--controller-manager", "/controller_manager",
-                   "--controller-manager-timeout", "120"],
+    # servo_controller
+    position_controller_spawner = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'position_controller'],
+        output='screen'
     )
 
-    velocity_controller_spawner = Node(
-        name="velocity_controller_spawner",
-        package="controller_manager",
-        executable="spawner",
-        arguments=["velocity_controller",
-                   "--controller-manager", "/controller_manager",
-                   "--controller-manager-timeout", "120"],
+    # wheel_velocity_controller
+    velocity_controller_spawner = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'velocity_controller'],
+        output='screen'
     )
-
+    
     ### LAUNCH ###
     robot_state_publisher_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -107,6 +112,16 @@ def generate_launch_description():
     )
 
     ld = LaunchDescription()
+    
+    # start up ignition, then controllers...
+    ld.add_action(RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=spawn_entity_cmd,
+                on_exit=[joint_state_broadcaster_spawner,
+                         position_controller_spawner,
+                         velocity_controller_spawner]
+            )
+    ))
 
     ld.add_action(initial_pose_x_cmd)
     ld.add_action(initial_pose_y_cmd)
@@ -114,9 +129,13 @@ def generate_launch_description():
     ld.add_action(initial_pose_yaw_cmd)
 
     ld.add_action(spawn_entity_cmd)
-    ld.add_action(joint_state_broadcaster_spawner)
-    ld.add_action(position_controller_spawner)
-    ld.add_action(velocity_controller_spawner)
+    #ld.add_action(joint_state_broadcaster_spawner)
+    #ld.add_action(position_controller_spawner)
+    #ld.add_action(velocity_controller_spawner)
     ld.add_action(robot_state_publisher_cmd)
 
+    # Verbose introspection of launch object
+    #print('Starting introspection of launch description...\n') 
+    #print(LaunchIntrospector().format_launch_description(ld))
+    #print('\nStarting launch of launch description...\n') 
     return ld

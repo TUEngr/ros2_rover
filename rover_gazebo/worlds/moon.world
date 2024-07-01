@@ -1,42 +1,60 @@
 <?xml version="1.0" ?>
-<sdf version="1.4">
-  <world name="default">
-   
-    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
-      <update_rate>1.0</update_rate>
-    </plugin>
+<sdf version='1.8'>
 
-    <light name="sun_directional" type="directional">
-      <cast_shadows>true</cast_shadows>
-      <pose>200 0 14 0 0 0</pose>
-      <diffuse>0.7 0.7 0.7 1</diffuse>
-      <specular>0.001 0.001 0.001 1</specular>
-      <direction>-1 -0.1 -0.15</direction>
-      <attenuation>
-        <range>1000</range>
-        <constant>1</constant>
-        <linear>0</linear>
-      </attenuation>
-    </light>
-   
-    <scene>
-      <ambient>0.30 0.30 0.30 1.0</ambient>
-      <background>0.0 0.0 0.0 1</background>
-      <origin_visual>0</origin_visual>
-      <grid>false</grid>
-      <shadows>true</shadows>
-    </scene>
+    <world name='moon'>
+      <physics name='1ms' type='ignored'>
+            <max_step_size>0.003</max_step_size>
+            <real_time_factor>1</real_time_factor>
+            <real_time_update_rate>1000</real_time_update_rate>
+      </physics>
+      <plugin name='ignition::gazebo::systems::Physics' filename='ignition-gazebo-physics-system' />
+      <plugin name='ignition::gazebo::systems::UserCommands' filename='ignition-gazebo-user-commands-system' />
+      <plugin name='ignition::gazebo::systems::SceneBroadcaster' filename='ignition-gazebo-scene-broadcaster-system' />
+      <plugin name='ignition::gazebo::systems::Contact' filename='ignition-gazebo-contact-system' />
 
-    <physics type="ode">
-      <max_step_size>0.001</max_step_size>
-      <gravity>0 0 -1.62</gravity>     <!-- Moon Gravity -->
+
+      <gravity>0 0 -1.62</gravity> <!-- moon gravity -->
       <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
-      <atmosphere type="adiabatic"/>  
-    </physics>
+      <atmosphere type='adiabatic' />
+      <max_step_size>0.001</max_step_size>
+
+      <include> <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri> </include>
+      <include> <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Ground Plane</uri> </include>
+      <include>
+<uri>
+https://fuel.gazebosim.org/1.0/mgonzs13/models/Moon model
+</uri>
+</include>
+
+
+<!--
+      <include>
+      <uri>model://moon</uri> 
+      </include>
+
+      <light name="sun_directional" type="directional">
+        <cast_shadows>true</cast_shadows>
+        <pose>200 0 14 0 0 0</pose>
+        <diffuse>0.7 0.7 0.7 1</diffuse>
+        <specular>0.001 0.001 0.001 1</specular>
+        <direction>-1 -0.1 -0.15</direction>
+        <attenuation>
+          <range>1000</range>
+          <constant>1</constant>
+          <linear>0</linear>
+        </attenuation>
+      </light>
+-->
+   
+      <scene>
+        <ambient>0.30 0.30 0.30 1.0</ambient>
+        <background>0.0 0.0 0.0 1</background>
+        <origin_visual>0</origin_visual>
+        <grid>false</grid>
+        <shadows>true</shadows>
+      </scene>
+
     
-    <include>
-      <uri>model://moon</uri>
-    </include>
 
   </world>
 </sdf>

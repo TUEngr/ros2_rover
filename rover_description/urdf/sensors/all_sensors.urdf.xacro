@@ -30,7 +30,7 @@
   <!-- Hokuyo -->
   <xacro:include filename="$(find rover_description)/urdf/sensors/hokuyo.urdf.xacro" /> 
 
-  <!-- Hokuyo -->
+  <!-- XTion -->
   <xacro:include filename="$(find rover_description)/urdf/sensors/asus_xtion.urdf.xacro" /> 
   
 </robot>

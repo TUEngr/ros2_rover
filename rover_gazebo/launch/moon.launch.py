@@ -52,7 +52,7 @@ def generate_launch_description():
             os.path.join(pkg_path, "launch", "gazebo.launch.py")
         ),
         launch_arguments={
-            "world": os.path.join(pkg_path, "worlds", "moon.world"),
+            "world": os.path.join(pkg_path, "worlds", "ign_moon.world"),
             "initial_pose_z": "2.11",
             "nav2_planner": nav2_planner,
             "nav2_controller": nav2_controller

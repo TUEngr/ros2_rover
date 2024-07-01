@@ -55,12 +55,19 @@
                 x="${bogie_box_length}" y="${bogie_box_width}" z="${bogie_box_depth}" />
         </link>
 
-        <gazebo reference="${lat_label}_bogie_link">
-            <material>Gazebo/White</material>
-        </gazebo>
+        <!-- Fixed Bogie Joint  (for testing) -->
+        <!-- 
+        <xacro:macro name="bogie_joint" params="lat_label reflect">
+            <joint name="${lat_label}_bogie_joint" type="fixed">
+                <origin rpy="0 0 0" xyz="-1.181 ${reflect * 0.025} -0.062"/>
+                <parent link="${lat_label}_rocker_link" />
+                <child link="${lat_label}_bogie_link" />
+            </joint>
+        </xacro:macro>
+        -->
 
 
-        <!-- joint -->
+        <!-- Articulated joint -->
         <joint name="${lat_label}_bogie_joint" type="revolute">
             <origin rpy="0 0 0" xyz="-0.181 ${reflect * 0.025} -0.062"/>
             <axis xyz="0 1 0" />
@@ -72,10 +79,5 @@
             <parent link="${lat_label}_rocker_link" />
             <child link="${lat_label}_bogie_link" />
         </joint>
-
-        <gazebo reference="${lat_label}_bogie_joint">
-            <provideFeedback>true</provideFeedback>
-            <implicitSpringDamper>true</implicitSpringDamper>
-        </gazebo>
     </xacro:macro>
 </robot>

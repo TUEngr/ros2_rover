@@ -28,13 +28,16 @@ from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, UnlessCondition
+from launch import LaunchIntrospector
+from launch.actions import LogInfo
 
 
 def generate_launch_description():
+    ld = LaunchDescription()
 
     pkg_path = get_package_share_directory("rover_gazebo")
-    pkg_gazebo_ros = get_package_share_directory("gazebo_ros")
+    pkg_ros_gz_sim = get_package_share_directory("ros_gz_sim")
     pkg_rover_localization = get_package_share_directory("rover_localization")
     pkg_rover_navigation = get_package_share_directory("rover_navigation")
 
@@ -118,23 +121,17 @@ def generate_launch_description():
     )
 
     ### LAUNCHS ###
-    gazebo_client_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(pkg_gazebo_ros, "launch", "gzclient.launch.py")
-        ),
-        condition=IfCondition(PythonExpression([launch_gui]))
+    ignition_server_paused_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(pkg_ros_gz_sim, "launch", "gz_sim.launch.py")),
+        launch_arguments={"gz_args": [" -v 4 -z 100 ", world] }.items(),
+        condition=IfCondition(PythonExpression([pause_gz]))
     )
 
-    gazebo_server_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(pkg_gazebo_ros, "launch", "gzserver.launch.py")
-        ),
-        launch_arguments={
-            "world": world,
-            "pause": pause_gz,
-            "params_file": os.path.join(pkg_path, "config", "gazebo.yaml"),
-        }.items()
-    )
+    #ignition_server_cmd = IncludeLaunchDescription(
+        #PythonLaunchDescriptionSource( os.path.join(pkg_ros_gz_sim, "launch", "gz_sim.launch.py")),
+        #launch_arguments={"gz_args": [" -r -z 100 ", world]}.items(),
+        #condition=UnlessCondition(PythonExpression([pause_gz]))
+    #)
 
     localization_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -175,25 +172,30 @@ def generate_launch_description():
         }.items()
     )
 
-    ld = LaunchDescription()
-
+    ld.add_action(LogInfo(msg="Starting launch process... "))
+    ld.add_action(world_cmd)
     ld.add_action(launch_gui_cmd)
     ld.add_action(pause_gz_cmd)
     ld.add_action(launch_rviz_cmd)
-    ld.add_action(world_cmd)
     ld.add_action(initial_pose_x_cmd)
     ld.add_action(initial_pose_y_cmd)
     ld.add_action(initial_pose_z_cmd)
     ld.add_action(initial_pose_yaw_cmd)
-    ld.add_action(nav2_planner_cmd)
-    ld.add_action(nav2_controller_cmd)
+    #ld.add_action(nav2_planner_cmd)
+    #ld.add_action(nav2_controller_cmd)
 
-    ld.add_action(gazebo_client_cmd)
-    ld.add_action(gazebo_server_cmd)
-    ld.add_action(localization_cmd)
-    ld.add_action(navigation_cmd)
+    ld.add_action(ignition_server_paused_cmd)
+    # ld.add_action(ignition_server_cmd)
+    #ld.add_action(localization_cmd)
+    #ld.add_action(navigation_cmd)
     ld.add_action(cmd_vel_cmd)
     ld.add_action(spawn_cmd)
     ld.add_action(rviz_cmd)
+
+    # Verbose introspection of launch object
+    # print('Starting introspection of launch description...\n') 
+    # li = LaunchIntrospector()
+    # print(li.format_launch_description(ld))
+    # print('\nStarting launch of launch description...\n') 
 
     return ld

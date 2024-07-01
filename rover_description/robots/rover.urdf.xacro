@@ -3,8 +3,8 @@
 <robot name="rover" xmlns:xacro="http://www.ros.org/wiki/xacro">
     
     <!-- Include macros -->
-    <xacro:include filename="$(find rover_description)/urdf/materials.xacro"/>
-    <xacro:include filename="$(find rover_description)/urdf/inertials.xacro"/>
+    <xacro:include filename="$(find rover_description)/urdf/materials.xacro" />
+    <xacro:include filename="$(find rover_description)/urdf/inertials.xacro" />
     <xacro:include filename="$(find rover_description)/urdf/bases/body.urdf.xacro" />
     <xacro:include filename="$(find rover_description)/urdf/bases/differential.urdf.xacro" />
     <xacro:include filename="$(find rover_description)/urdf/bases/turnbuckle.urdf.xacro" />
@@ -16,6 +16,7 @@
 
 
     <!-- Gazebo ROS2 Control -->
+    <!--
     <gazebo>
         <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
             <parameters>$(find rover_description)/config/control.yaml</parameters>
@@ -158,9 +159,11 @@
             <state_interface name="effort"/>
         </joint>
     </ros2_control>
+    -->
 
-  
-    <!-- The base link -->
+   <!-- The base link - the reference link for the entire model -->
+    <link name="base_footprint" /> <!-- dummy link for gazebo -->
+
     <link name="base_link">
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0" />
@@ -169,24 +172,39 @@
             </geometry>
             <material name="orange" />
         </visual>
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+            <geometry>
+                <box size="0.01 0.01 0.01"/>
+            </geometry>
+        </collision>
+        <xacro:solid_cuboid_inertial 
+            rpy="0 0 0" xyz="0 0 0"
+            mass="0.01"
+            x="0.01" y="0.01" z="0.01" /> 
     </link>
 
-    <gazebo reference="base_link">
-        <material>Gazebo/Orange</material>
-    </gazebo>
+    <joint name="base_joint" type="fixed">
+        <parent link="base_footprint"/>
+        <origin rpy="0 0 0" xyz="0 0 1.0"/>
+        <child link="base_link"/>
+        <axis xyz="0 0 1"/>
+    </joint>
+
 
     <!-- body -->
     <xacro:body parent="base_link" />
     <xacro:differential parent="base_link" />
 
-    <xacro:turnbuckle lat_label="left" reflect="1"/>
-    <xacro:turnbuckle lat_label="right" reflect="-1"/>
-    
     <xacro:rocker parent="base_link" lat_label="left" reflect="1"/>
     <xacro:rocker parent="base_link" lat_label="right" reflect="-1"/>
 
+    <xacro:turnbuckle lat_label="left" reflect="1"/>
+    <xacro:turnbuckle lat_label="right" reflect="-1"/>
+
     <xacro:bogie lat_label="left" reflect="1"/>
     <xacro:bogie lat_label="right" reflect="-1"/>
+
 
     <!-- sensors -->
     <xacro:sensor_hokuyo prefix="laser" parent="base_link" min_angle="-1.0" max_angle="1.0">
@@ -194,16 +212,15 @@
     </xacro:sensor_hokuyo>   
     
     <xacro:sensor_imu prefix="imu" parent="base_link">
-        <!-- <origin xyz="-0.32 0 0.05" rpy="0 0.5 0"/> -->
         <origin xyz="0 0 -0.04" rpy="0 0 0"/>
     </xacro:sensor_imu>
 
     <xacro:sensor_asus_xtion prefix="camera" parent="base_link">
         <origin xyz="0.215 0 0.065" rpy="0 0.4 0"/>
-        <!-- <origin xyz="0.212 0 0.065" rpy="0 0 0"/> -->
     </xacro:sensor_asus_xtion>
 
     <!-- wheels -->
+    <!--
     <xacro:corner_link lon_label="front" lat_label="left" reflect="1"/>
     <xacro:corner_link lon_label="front" lat_label="right" reflect="-1"/>
     <xacro:front_corner_joint lat_label="left" reflect="1"/>
@@ -228,6 +245,6 @@
     <xacro:wheel_link lon_label="back" lat_label="right" reflect="-1"/>
     <xacro:corner_wheel_joint lon_label="back" lat_label="left" reflect="1"/>
     <xacro:corner_wheel_joint lon_label="back" lat_label="right" reflect="-1"/>
-
+    -->
 
 </robot>

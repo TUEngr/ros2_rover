@@ -54,10 +54,6 @@
                 x="${corner_box_length}" y="${corner_box_width}" z="${corner_box_depth}" />
         </link> 
 
-        <gazebo reference="${lon_label}_${lat_label}_corner_link">
-            <material>Gazebo/White</material>
-        </gazebo>
-
     </xacro:macro>
 
 
@@ -71,10 +67,6 @@
             <limit effort="1000.0" lower="-3.14159" upper="3.14159" velocity="30"/>
             <dynamics damping="0.0" friction="0.0"/>
         </joint>
-
-        <gazebo reference="front_${lat_label}_corner_joint">
-            <provideFeedback>true</provideFeedback>
-        </gazebo>
     </xacro:macro>
 
 
@@ -88,10 +80,6 @@
             <limit effort="1000.0" lower="-3.14159" upper="3.14159" velocity="30"/>
             <dynamics damping="0.0" friction="0.0"/>
         </joint>
-
-        <gazebo reference="back_${lat_label}_corner_joint">
-            <provideFeedback>true</provideFeedback>
-        </gazebo>
     </xacro:macro>
 
 </robot>
